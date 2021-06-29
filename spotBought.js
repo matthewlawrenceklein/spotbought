@@ -18,7 +18,9 @@ const progressBar = new cliProgress.SingleBar({
 });
 
 if (argv.h || argv.help){
-    console.log('spot bought is a buddy');
+    console.log(friendly(`spotbought captures your currently playing spotify album, and then queries the discogs.com marketplace for available copies.
+    use the '-c' flag to set currency value (ie USD, CAD, JPY). 
+    `));
     return
 }
 
