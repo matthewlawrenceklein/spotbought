@@ -27,30 +27,42 @@ if (argv.h || argv.help){
 spotify.getTrack(function(err, track){
 
     let [artist, album] = [track.artist, track.album]
-    console.log(friendly(`Listening to ${album} by ${artist}`));
     if(err){
         console.log(error("encountered an error :(", err));
     } else {
+        console.log(friendly(`Querying discogs database for ${album}`));
         progressBar.start(100, 0, {
             speed: "N/A"
         });
-        console.log(friendly(`Querying discogs for ${album}`));
         fetch(`https://api.discogs.com/database/search?artist=${artist}&release_title=${album}&key=${key}&secret=${secret}`)
             .then(resp => resp.json())
             .then(query => {
                 progressBar.increment(100)
+                progressBar.stop()
                 if(query.results[0]){
-                    const release_id = query.results[0].master_id
-                    fetch(`https://api.discogs.com/marketplace/stats/${release_id}?curr_abbr=${argv.c ? argv.c : 'USD'}`)
+                    console.log(friendly('querying discogs marketplace for available copies'))
+                    progressBar.start(100, 0, {
+                        speed: "N/A"
+                    });
+                    fetch(`https://api.discogs.com/marketplace/stats/${query.results[0].master_id}?curr_abbr=${argv.c ? argv.c : 'USD'}`)
                         .then(resp => resp.json())
                         .then(stats => {
+                            progressBar.increment(100)
                             progressBar.stop()
-                            const URL = `https://www.discogs.com/sell/list?master_id=${release_id}&format=Vinyl`
-                            const outputStr = 
-`There are currently ${stats.num_for_sale} copies of ${album} for sale, with a low price of ${stats.lowest_price.value} ${stats.lowest_price.currency}. \n 
-Here is a link to the album's vinyl listings on Discogs' marketplace : ${URL}                  
-`
-                            console.log(outputStr);
+                            let outputStr; 
+                            if(stats.num_for_sale > 0){
+                                const URL = `https://www.discogs.com/sell/list?master_id=${release_id}&format=Vinyl`
+                                outputStr = 
+                                `There are currently ${stats.num_for_sale} copies of ${album} for sale, with a low price of ${stats.lowest_price.value} ${stats.lowest_price.currency}. \n 
+                                Here is a link to the album's vinyl listings on Discogs' marketplace : ${URL}                  
+                                `
+                                console.log(friendly(outputStr));
+                            } else {
+                                outputStr = 
+                                `Looks like there aren't any copies of ${album} for sale on the discogs marketplace :/`
+                                console.log(error(outputStr))
+                            }
+                            
                         })
                 } else {
                     progressBar.stop()
