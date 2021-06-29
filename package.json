@@ -8,5 +8,8 @@
     "minimist": "^1.2.5",
     "node-fetch": "^2.6.1",
     "spotify-node-applescript": "^1.1.1"
+  }, 
+  "bin": {
+    "spotbought": "spotBought.js"
   }
 }
