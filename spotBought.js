@@ -45,12 +45,13 @@ spotify.getTrack(function(err, track){
                             progressBar.stop()
                             const URL = `https://www.discogs.com/sell/list?master_id=${release_id}&format=Vinyl`
                             const outputStr = 
-                            `There are currently ${stats.num_for_sale} copies of ${album} for sale, with a low price of ${stats.lowest_price.value} ${stats.lowest_price.currency}. \n 
+`There are currently ${stats.num_for_sale} copies of ${album} for sale, with a low price of ${stats.lowest_price.value} ${stats.lowest_price.currency}. \n 
 Here is a link to the album's vinyl listings on Discogs' marketplace : ${URL}                  
-                            `
+`
                             console.log(outputStr);
                         })
                 } else {
+                    progressBar.stop()
                     console.log(`looks like we couldnt find any listings for ${album} on discogs :(`);
                 }
             })
