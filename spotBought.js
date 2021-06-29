@@ -4,8 +4,6 @@ const fetch = require("node-fetch");
 const cliProgress = require('cli-progress');
 var argv = require('minimist')(process.argv.slice(2));
 const chalk = require('chalk')
-const key = process.env.KEY
-const secret = process.env.SECRET
 
 // GLOBAL CHALK VAR
 const error = chalk.bold.red
@@ -35,7 +33,7 @@ spotify.getTrack(function(err, track){
         progressBar.start(100, 0, {
             speed: "N/A"
         });
-        fetch(`https://api.discogs.com/database/search?artist=${artist}&release_title=${album}&key=${key}&secret=${secret}`)
+        fetch(`https://api.discogs.com/database/search?artist=${artist}&release_title=${album}&key=${process.env.KEY}&secret=${process.env.SECRET}`)
             .then(resp => resp.json())
             .then(query => {
                 progressBar.increment(100)
@@ -53,7 +51,7 @@ spotify.getTrack(function(err, track){
                             let outputStr; 
                             if(stats.num_for_sale > 0){
                                 const URL = `https://www.discogs.com/sell/list?master_id=${query.results[0].master_id}`
-                                outputStr = `There are currently ${stats.num_for_sale} copies of ${album} for sale, with a low price of ${stats.lowest_price.value} ${stats.lowest_price.currency}.`
+                                outputStr = `There ${stats.num_for_sale == 1 ? 'is' : 'are'} currently ${stats.num_for_sale} ${stats.num_for_sale == 1 ? 'copy' : 'copies'} of ${album} for sale, with a low price of ${stats.lowest_price.value} ${stats.lowest_price.currency}.`
                                 const linkStr = `Here is a link to the album's listings on Discogs' marketplace : ${URL}`
                                 console.log(friendly(outputStr));
                                 console.log(green(linkStr));
