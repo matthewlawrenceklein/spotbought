@@ -10,6 +10,7 @@ const secret = process.env.SECRET
 // GLOBAL CHALK VAR
 const error = chalk.bold.red
 const friendly = chalk.bold.blue
+const green = chalk.bold.green 
 
 const progressBar = new cliProgress.SingleBar({
     barCompleteChar: '\u2588',
@@ -18,7 +19,7 @@ const progressBar = new cliProgress.SingleBar({
 });
 
 if (argv.h || argv.help){
-    console.log(friendly(`spotbought captures your currently playing spotify album, and then queries the discogs.com marketplace for available copies.
+    console.log(friendly(`spotbought captures your currently playing spotify album and then queries the discogs.com marketplace for available copies.
     use the '-c' flag to set currency value (ie USD, CAD, JPY). 
     `));
     return
@@ -51,12 +52,11 @@ spotify.getTrack(function(err, track){
                             progressBar.stop()
                             let outputStr; 
                             if(stats.num_for_sale > 0){
-                                const URL = `https://www.discogs.com/sell/list?master_id=${release_id}&format=Vinyl`
-                                outputStr = 
-                                `There are currently ${stats.num_for_sale} copies of ${album} for sale, with a low price of ${stats.lowest_price.value} ${stats.lowest_price.currency}. \n 
-                                Here is a link to the album's vinyl listings on Discogs' marketplace : ${URL}                  
-                                `
+                                const URL = `https://www.discogs.com/sell/list?master_id=${query.results[0].master_id}`
+                                outputStr = `There are currently ${stats.num_for_sale} copies of ${album} for sale, with a low price of ${stats.lowest_price.value} ${stats.lowest_price.currency}.`
+                                const linkStr = `Here is a link to the album's listings on Discogs' marketplace : ${URL}`
                                 console.log(friendly(outputStr));
+                                console.log(green(linkStr));
                             } else {
                                 outputStr = 
                                 `Looks like there aren't any copies of ${album} for sale on the discogs marketplace :/`
