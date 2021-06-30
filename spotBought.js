@@ -46,7 +46,7 @@ spotify.getTrack(function(err, track){
             .then(query => {
                 progressBar.increment(100)
                 progressBar.stop()
-                if(!query.results){
+                if(query.results[0] == undefined || query.results[0] == null){
                     progressBar.stop()
                     console.log(yellow(`looks like we couldnt find any listings for ${album} on discogs :(`));
                     return 
