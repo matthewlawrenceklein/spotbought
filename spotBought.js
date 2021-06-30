@@ -9,8 +9,9 @@ require('dotenv').config()
 
 // GLOBAL CHALK VAR
 const error = chalk.bold.red
-const friendly = chalk.bold.blue
-const green = chalk.bold.green 
+const blue = chalk.bold.blue
+const green = chalk.bold.green
+const yellow = chalk.bold.yellow 
 
 const progressBar = new cliProgress.SingleBar({
     barCompleteChar: '\u2588',
@@ -19,7 +20,7 @@ const progressBar = new cliProgress.SingleBar({
 });
 
 if (argv.h || argv.help){
-    console.log(friendly(`spotbought captures your currently playing spotify album and then queries the discogs.com marketplace for available copies.
+    console.log(blue(`spotbought captures your currently playing spotify album and then queries the discogs.com marketplace for available copies.
     use the '-c' flag to set currency value (ie USD, CAD, JPY). 
     `));
     return
@@ -35,7 +36,7 @@ spotify.getTrack(function(err, track){
     if(err){
         console.log(error("encountered an error :(", err));
     } else {
-        console.log(friendly(`Querying discogs database for ${album}`));
+        console.log(blue(`Querying discogs database for ${album}`));
         progressBar.start(100, 0, {
             speed: "N/A"
         });
@@ -44,8 +45,13 @@ spotify.getTrack(function(err, track){
             .then(query => {
                 progressBar.increment(100)
                 progressBar.stop()
-                if(query.results[0]){
-                    console.log(friendly('querying discogs marketplace for available copies'))
+                if(!query.results[0]){
+                    progressBar.stop()
+                    console.log(yellow(`looks like we couldnt find any listings for ${album} on discogs :(`));
+                    return 
+                }
+                else if(query.results[0]){
+                    console.log(blue('querying discogs marketplace for available copies'))
                     progressBar.start(100, 0, {
                         speed: "N/A"
                     });
@@ -59,19 +65,15 @@ spotify.getTrack(function(err, track){
                                 const URL = `https://www.discogs.com/sell/list?master_id=${query.results[0].master_id}`
                                 outputStr = `There ${stats.num_for_sale == 1 ? 'is' : 'are'} currently ${stats.num_for_sale} ${stats.num_for_sale == 1 ? 'copy' : 'copies'} of ${album} for sale, with a low price of ${stats.lowest_price.value} ${stats.lowest_price.currency}.`
                                 const linkStr = `Here is a link to the album's listings on Discogs' marketplace : ${URL}`
-                                console.log(friendly(outputStr));
+                                console.log(blue(outputStr));
                                 console.log(green(linkStr));
                             } else {
-                                outputStr = 
-                                `Looks like there aren't any copies of ${album} for sale on the discogs marketplace :/`
+                                outputStr = `Looks like there aren't any copies of ${album} for sale on the discogs marketplace :/`
                                 console.log(error(outputStr))
                             }
                             
                         })
-                } else {
-                    progressBar.stop()
-                    console.log(`looks like we couldnt find any listings for ${album} on discogs :(`);
-                }
+                } 
             })
     }
 

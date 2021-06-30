@@ -1,6 +1,6 @@
 {
   "name": "spotbought",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "dependencies": {
     "chalk": "^4.1.1",
     "cli-progress": "^3.9.0",
@@ -8,7 +8,7 @@
     "minimist": "^1.2.5",
     "node-fetch": "^2.6.1",
     "spotify-node-applescript": "^1.1.1"
-  }, 
+  },
   "main": "spotBought.js",
   "bin": {
     "spotbought": "spotBought.js"
