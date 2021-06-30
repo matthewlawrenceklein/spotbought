@@ -35,6 +35,7 @@ spotify.getTrack(function(err, track){
     let [artist, album] = [track.artist, track.album]
     if(err){
         console.log(error("encountered an error :(", err));
+        return 
     } else {
         console.log(blue(`Querying discogs database for ${album}`));
         progressBar.start(100, 0, {
@@ -45,7 +46,7 @@ spotify.getTrack(function(err, track){
             .then(query => {
                 progressBar.increment(100)
                 progressBar.stop()
-                if(!query.results[0]){
+                if(!query.results){
                     progressBar.stop()
                     console.log(yellow(`looks like we couldnt find any listings for ${album} on discogs :(`));
                     return 
