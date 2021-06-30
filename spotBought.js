@@ -1,9 +1,11 @@
-require('dotenv').config()
+#!/usr/bin/env node
+
 const spotify = require('spotify-node-applescript');
 const fetch = require("node-fetch");
 const cliProgress = require('cli-progress');
 var argv = require('minimist')(process.argv.slice(2));
 const chalk = require('chalk')
+require('dotenv').config()
 
 // GLOBAL CHALK VAR
 const error = chalk.bold.red
@@ -24,6 +26,10 @@ if (argv.h || argv.help){
 }
 
 spotify.getTrack(function(err, track){
+    if(!track){
+        console.log(error('unable to capture currently playing track'));
+        return 
+    }
 
     let [artist, album] = [track.artist, track.album]
     if(err){
