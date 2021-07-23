@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
+const puppeteer = require('puppeteer');
 const spotify = require('spotify-node-applescript');
 const fetch = require("node-fetch");
 const cliProgress = require('cli-progress');
 var argv = require('minimist')(process.argv.slice(2));
 const chalk = require('chalk')
 require('dotenv').config()
+
 
 // GLOBAL CHALK VAR
 const error = chalk.bold.red
@@ -52,30 +54,28 @@ spotify.getTrack(function(err, track){
                     return 
                 }
                 else if(query.results[0]){
-                    console.log(blue('querying discogs marketplace for available copies'))
-                    progressBar.start(100, 0, {
-                        speed: "N/A"
-                    });
-                    fetch(`https://api.discogs.com/marketplace/stats/${query.results[0].master_id}?curr_abbr=${argv.c ? argv.c : 'USD'}`)
-                        .then(resp => resp.json())
-                        .then(stats => {
-                            progressBar.increment(100)
-                            progressBar.stop()
-                            let outputStr; 
-                            if(stats.num_for_sale > 0){
-                                const URL = `https://www.discogs.com/sell/list?master_id=${query.results[0].master_id}`
-                                outputStr = `There ${stats.num_for_sale == 1 ? 'is' : 'are'} currently ${stats.num_for_sale} ${stats.num_for_sale == 1 ? 'copy' : 'copies'} of ${album} for sale, with a low price of ${stats.lowest_price.value} ${stats.lowest_price.currency}.`
-                                const linkStr = `Here is a link to the album's listings on Discogs' marketplace : ${URL}`
-                                console.log(blue(outputStr));
-                                console.log(green(linkStr));
-                            } else {
-                                outputStr = `Looks like there aren't any copies of ${album} for sale on the discogs marketplace :/`
-                                console.log(error(outputStr))
-                            }
-                            
-                        })
+                    // console.log(blue('querying discogs marketplace for available copies'))
+                    // progressBar.start(100, 0, {
+                    //     speed: "N/A"
+                    // });
+                    const URL = `https://www.discogs.com/sell/list?master_id=${query.results[0].master_id}&format=Vinyl`
+                    console.log(blue('starting puppeteer session'));
+                    let pricesArr = puppeteerScrape(URL)
                 } 
             })
     }
 
 });
+
+async function puppeteerScrape(URL){
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    console.log(blue('navigating to discogs marketplace'));
+    await page.goto(URL);
+    console.log(blue('scraping prices from listings'));
+    let pricesArr = await page.$$eval(".converted_price", elements=> elements.map(item=>item.innerText))
+    await browser.close()
+    console.log(green('success'));
+    await console.log(pricesArr);
+    return pricesArr
+}

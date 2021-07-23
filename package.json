@@ -1,12 +1,13 @@
 {
   "name": "spotbought",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "dependencies": {
     "chalk": "^4.1.1",
     "cli-progress": "^3.9.0",
     "dotenv": "^10.0.0",
     "minimist": "^1.2.5",
     "node-fetch": "^2.6.1",
+    "puppeteer": "^10.1.0",
     "spotify-node-applescript": "^1.1.1"
   },
   "main": "spotBought.js",
