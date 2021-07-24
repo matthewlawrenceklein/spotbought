@@ -27,45 +27,49 @@ if (argv.h || argv.help){
     `));
     return
 }
+function getTrackData(){
+    spotify.getTrack(function(err, track){
+        if(!track){
+            console.log(error('unable to capture currently playing track'));
+            return 
+        }
+    
+        let [artist, album] = [track.artist, track.album]
+        if(err){
+            console.log(error("encountered an error :(", err));
+            return 
+        } else {
+            console.log(blue(`Querying discogs database for ${album}`));
+            progressBar.start(100, 0, {
+                speed: "N/A"
+            });
+            getDiscogsID(artist, album)
+        }
+    });
+}
 
-spotify.getTrack(function(err, track){
-    if(!track){
-        console.log(error('unable to capture currently playing track'));
-        return 
-    }
-
-    let [artist, album] = [track.artist, track.album]
-    if(err){
-        console.log(error("encountered an error :(", err));
-        return 
-    } else {
-        console.log(blue(`Querying discogs database for ${album}`));
-        progressBar.start(100, 0, {
-            speed: "N/A"
-        });
-        fetch(`https://api.discogs.com/database/search?artist=${artist}&release_title=${album}&key=${process.env.KEY}&secret=${process.env.SECRET}`)
-            .then(resp => resp.json())
-            .then(query => {
-                progressBar.increment(100)
-                progressBar.stop()
-                if(query.results[0] == undefined || query.results[0] == null){
+function getDiscogsID(artist, album){
+    fetch(`https://api.discogs.com/database/search?artist=${artist}&release_title=${album}&key=${process.env.KEY}&secret=${process.env.SECRET}`)
+                .then(resp => resp.json())
+                .then(query => {
+                    progressBar.increment(100)
                     progressBar.stop()
-                    console.log(yellow(`looks like we couldnt find any listings for ${album} on discogs :(`));
-                    return 
-                }
-                else if(query.results[0]){
-                    // console.log(blue('querying discogs marketplace for available copies'))
-                    // progressBar.start(100, 0, {
-                    //     speed: "N/A"
-                    // });
-                    const URL = `https://www.discogs.com/sell/list?master_id=${query.results[0].master_id}&format=Vinyl`
-                    console.log(blue('starting puppeteer session'));
-                    let pricesArr = puppeteerScrape(URL)
-                } 
-            })
-    }
-
-});
+                    if(query.results[0] == undefined || query.results[0] == null){
+                        progressBar.stop()
+                        console.log(yellow(`looks like we couldnt find any listings for ${album} on discogs :(`));
+                        return 
+                    }
+                    else if(query.results[0]){
+                        // console.log(blue('querying discogs marketplace for available copies'))
+                        // progressBar.start(100, 0, {
+                        //     speed: "N/A"
+                        // });
+                        const URL = `https://www.discogs.com/sell/list?master_id=${query.results[0].master_id}&format=Vinyl`
+                        console.log(blue('starting puppeteer session'));
+                        puppeteerScrape(URL)
+                    } 
+                })
+}
 
 async function puppeteerScrape(URL){
     const browser = await puppeteer.launch()
@@ -85,5 +89,19 @@ function processPrices(priceArr){
     priceArr.map(price => {
         strippedPrices.push(parseFloat(re.exec(price)[0])) // parse dollar amount from string
     })
-    console.log(strippedPrices.sort((a, b) => (a < b ? -1 : 1)));
+    const average = (array) => array.reduce((a, b) => a + b) / array.length;
+
+    const lowPrice = strippedPrices.sort((a, b) => (a < b ? -1 : 1))[0];
+    const averagePrice = average(strippedPrices)
+    const highPice = strippedPrices.sort((a, b) => (a < b ? -1 : 1))[strippedPrices.length - 1]
+
+    console.log('low', lowPrice);
+    console.log('average', averagePrice);
+    console.log('high', highPice);
 }
+
+function main(){
+    getTrackData()
+}
+
+main()
