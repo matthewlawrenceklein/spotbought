@@ -76,6 +76,14 @@ async function puppeteerScrape(URL){
     let pricesArr = await page.$$eval(".converted_price", elements=> elements.map(item=>item.innerText))
     await browser.close()
     console.log(green('success'));
-    await console.log(pricesArr);
-    return pricesArr
+    processPrices(pricesArr)
+}
+
+function processPrices(priceArr){
+    let strippedPrices = []
+    let re = new RegExp('[0-9]{2,3}.[0-9]{2}')
+    priceArr.map(price => {
+        strippedPrices.push(parseFloat(re.exec(price)[0])) // parse dollar amount from string
+    })
+    console.log(strippedPrices.sort((a, b) => (a < b ? -1 : 1)));
 }
